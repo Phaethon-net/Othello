@@ -1,0 +1,666 @@
+/* Othello — ported from Clarus_Viewer with additions for search box,
+   viewer toggle switch, exam toolbar, selection state, mode indicator. */
+
+html, body{
+    height: 100%;
+    border: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    text-align: left;
+    background-color: #024;
+    color: white;
+    min-width: 950px;
+    margin: 0;
+}
+
+a{
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+}
+a:visited{
+    display: inline-block;
+    color: lightgreen;
+    text-decoration: none;
+}
+
+b{
+    display: block;
+    padding: 10px;
+}
+
+button{
+    padding: 5px 10px;
+}
+
+span.label{
+    font-weight: bold;
+    color: yellow;
+}
+
+span.namelabel{
+    font-size: 12px;
+    font-weight: bold;
+    color: yellow;
+    text-align: left;
+}
+
+span.idlabel{
+    font-size: 10px;
+    font-weight: normal;
+    color: lightblue;
+    text-align: left;
+}
+
+.header{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    text-align: center;
+    color: white;
+    width: 100%;
+}
+
+#RE, #LE{
+    display: flex;
+    flex-wrap: wrap;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 24px;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    width: 45%;
+    margin: 5px;
+    padding: 5px;
+    float: left;
+    border-style: solid;
+    border-color: yellow;
+    border-width: 1px;
+    border-radius: 5px;
+}
+
+div.title {
+    width: 100%;
+}
+
+div.cell {
+    position: relative;
+    width: 154px;
+    height: 154px;
+    text-align: center;
+    margin: 2px;
+    background-color: rgba(0,0,0,1);
+}
+
+div.viewer {
+    position: relative;
+    top: -30px;
+    height: 154px;
+}
+
+div.typeP {
+    position: relative;
+    color: rgba(255,255,4,0.5);
+    background-color: rgba(0,0,0,0.25);
+    font-size: 6pt;
+    padding: 2px 2px 2px 2px;
+    margin: 10px;
+    left: -5px;
+    bottom: -155px;
+    width: 60px;
+    pointer-events: none;
+}
+
+table {
+}
+
+td.name {
+    padding: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: left;
+    font-weight: normal;
+    color: yellow;
+    border: 1px solid gray;
+}
+
+td.date {
+    padding: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    text-align: center;
+    font-weight: normal;
+    color: white;
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+
+#index {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#index hr {
+    width: 100%;
+}
+
+div #index a.index, div #index a.index0 {
+    /* keep specificity matching Clarus's "div .index" rule */
+}
+
+#index .index {
+    color: yellow;
+    font-size: 13pt;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    padding: 2px 2px 2px 2px;
+    margin: 2px 2px 2px 2px;
+    width: 18px;
+    text-align: center;
+    background-color: #424242;
+}
+
+#index .index0 {
+    color: yellow;
+    font-size: 13pt;
+    border-style: solid;
+    border-color: yellow;
+    border-width: 1px;
+    border-radius: 5px;
+    padding: 2px 3px 2px 3px;
+    margin: 2px 2px 2px 2px;
+    width: 64px;
+    text-align: center;
+    background-color: #424242;
+}
+
+#index .index.active, #index .index0.active {
+    background-color: #024;
+    color: #ffd84a;
+    border-color: #ffd84a;
+}
+
+/* Search box on the alphabetic row */
+.searchform {
+    display: inline-flex;
+    align-items: center;
+    margin: 2px 2px 2px 8px;
+    padding: 0;
+}
+.searchform input[type=text] {
+    background-color: #424242;
+    color: yellow;
+    border: 1px solid yellow;
+    border-radius: 5px;
+    padding: 4px 6px;
+    font-size: 11pt;
+    width: 220px;
+    outline: none;
+}
+.searchform input[type=text]::placeholder {
+    color: #b8b06b;
+    font-style: italic;
+}
+.searchform .clearq {
+    background: transparent;
+    color: yellow;
+    border: 1px solid yellow;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    line-height: 18px;
+    font-size: 14pt;
+    margin-left: 4px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.banner-content {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    vertical-align: middle;
+}
+
+.banner-left {
+    position: relative;
+    display: inline-block;
+    width: 600px;
+}
+
+.title-script {
+    font-size: 64pt;
+    font-family: 'Brush Script MT', cursive;
+    color: #e4dd84;
+}
+
+.title-plain {
+    font-size: 36pt;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #ffffff;
+}
+
+.banner-right {
+    position: relative;
+    display: inline-block;
+    float: right;
+    top: 0;
+    width: 140px;
+    text-align: center;
+}
+
+/* Toggle switch (half size) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 27px;
+    height: 13px;
+    margin: 4px auto;
+}
+.switch input { display: none; }
+.slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: #424242;
+    border: 1px solid #e4dd84;
+    border-radius: 13px;
+    transition: .2s;
+}
+.slider::before {
+    content: "";
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    width: 9px;
+    height: 9px;
+    background: #e4dd84;
+    border-radius: 50%;
+    transition: .2s;
+}
+.switch input:checked + .slider          { background: #024; }
+.switch input:checked + .slider::before  { transform: translateX(14px); }
+
+.switch-captions {
+    width: 110px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8pt;
+    color: #b0b0b0;
+}
+.switch-captions span.active {
+    color: #ffd84a;
+    font-weight: bold;
+}
+
+.phaethon {
+    font-size: 12pt;
+    font-family: 'Brush Script MT', cursive;
+    color: yellow;
+    text-align: center;
+}
+
+.version {
+    font-size: 8pt;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    text-align: center;
+}
+
+div.div_wrap {
+    color: green;
+    font-size: 8pt;
+    padding: 2px 3px 2px 3px;
+    margin: 2px 2px 2px 2px;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 260px 900px;
+}
+
+div.div_pat {
+    color: yellow;
+    font-size: 10pt;
+    border-style: solid;
+    border-color: yellow;
+    border-width: 1px;
+    border-radius: 5px;
+    padding: 2px 3px 2px 3px;
+    margin: 2px 2px 2px 2px;
+    width: 250px;
+    text-align: left;
+    float: left;
+}
+
+div.div_list {
+    color: green;
+    font-size: 8pt;
+    padding: 2px 3px 2px 3px;
+    margin: 2px 2px 2px 2px;
+    width: auto;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 100px 100px 100px 100px 100px 100px 100px 100px;
+    float: right;
+}
+
+div.div_date {
+    color: yellow;
+    font-size: 8pt;
+    border-style: solid;
+    border-color: white;
+    border-width: 1px;
+    border-radius: 5px;
+    padding: 10px 3px 10px 3px;
+    margin: 2px 2px 2px 2px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.emptylist {
+    padding: 24px;
+    color: #b0b0b0;
+    font-style: italic;
+}
+
+/* Exam toolbar */
+.exam-toolbar {
+    margin: 8px 0;
+    padding: 8px;
+    text-align: center;
+}
+.exam-toolbar button {
+    background: #424242;
+    color: yellow;
+    border: 1px solid yellow;
+    border-radius: 5px;
+    padding: 5px 12px;
+    margin: 0 4px;
+    cursor: pointer;
+    font-size: 11pt;
+}
+.exam-toolbar button:hover {
+    background: #024;
+}
+#sel-count {
+    color: #b0b0b0;
+    margin-left: 12px;
+    font-size: 10pt;
+}
+
+img.exam-thumb {
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-sizing: border-box;
+}
+img.exam-thumb.selected {
+    outline: 2px solid #ffd84a;
+    outline-offset: -2px;
+    box-shadow: 0 0 6px rgba(255, 216, 74, 0.7);
+}
+
+/* PView overlay */
+#overlay {
+    position: fixed;
+    display: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,1);
+    z-index: 9999;
+}
+
+/* Pane layout
+ *   single  : only paneA, full viewport
+ *   dual    : paneA left half, paneB right half
+ *   b-only  : only paneB, full viewport (after closing paneA in dual)
+ */
+.pane {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    overflow: hidden;
+    background: #000;
+}
+#paneB { display: none; }
+#overlay.single #paneA { left: 0;   right: 0;  display: block; }
+#overlay.single #paneB { display: none; }
+#overlay.dual   #paneA { left: 0;   width: 50%; display: block; border-right: 1px solid #444; }
+#overlay.dual   #paneB { left: 50%; right: 0;  display: block; }
+#overlay.b-only #paneA { display: none; }
+#overlay.b-only #paneB { left: 0;   right: 0;  display: block; }
+
+.pane canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+}
+.pane canvas.dragging { cursor: grabbing; }
+
+/* Per-pane readouts (small, in pane corner) */
+.readouts {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 10000;
+    pointer-events: none;
+    font-size: 9pt;
+}
+.readouts > div {
+    background-color: rgba(0,0,0,0.4);
+    border: 1px solid #888;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-bottom: 2px;
+    width: 96px;
+    text-align: right;
+    opacity: 0.88;
+}
+.readouts .r-zoom       { color: #ff8888; border-color: #ff8888; }
+.readouts .r-contrast   { color: #88ff88; border-color: #88ff88; }
+.readouts .r-brightness { color: #8888ff; border-color: #8888ff; }
+.readouts .r-mode       { color: #ffd84a; border-color: #ffd84a; }
+.readouts .r-mode.redfree { color: #88ff88; border-color: #88ff88; }
+
+/* Per-pane close (top-right of every pane). Closes that pane only;
+   if it's the last visible pane the whole overlay closes. */
+.pane-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 10000;
+    color: #ff8888;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #ff8888;
+    border-radius: 4px;
+    width: 26px;
+    height: 26px;
+    line-height: 22px;
+    text-align: center;
+    font-size: 16pt;
+    cursor: pointer;
+    opacity: 0.88;
+    user-select: none;
+}
+.pane-close:hover { background: #400; }
+
+/* Per-pane "Change" button (top centre, only visible in dual mode). */
+.pane-change {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    background: rgba(0,0,0,0.5);
+    color: #ffd84a;
+    border: 1px solid #ffd84a;
+    border-radius: 5px;
+    padding: 4px 14px;
+    font-size: 10pt;
+    cursor: pointer;
+    display: none;
+}
+.pane-change:hover { background: #024; }
+#overlay.dual .pane-change { display: block; }
+
+/* Overlay-level toolbar ("+ Compare") — bottom centre, only when one pane visible */
+#overlay-toolbar {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+}
+#overlay-toolbar button {
+    background: rgba(0,0,0,0.5);
+    color: #ffd84a;
+    border: 1px solid #ffd84a;
+    border-radius: 5px;
+    padding: 5px 14px;
+    font-size: 10pt;
+    cursor: pointer;
+}
+#overlay-toolbar button:hover { background: #024; }
+#overlay.dual #overlay-toolbar { display: none; }
+
+/* Picker modal */
+#picker {
+    position: fixed;
+    display: none;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 10002;
+}
+#picker.show { display: block; }
+.picker-inner {
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+    background: #122;
+    border: 2px solid #ffd84a;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+.picker-header {
+    padding: 10px 16px;
+    color: #ffd84a;
+    font-size: 14pt;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.picker-close {
+    cursor: pointer;
+    font-size: 22pt;
+    color: #ff8888;
+    line-height: 1;
+}
+.picker-body {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+    color: #fff;
+}
+.picker-eye {
+    margin-bottom: 16px;
+}
+.picker-eye h3 {
+    color: yellow;
+    margin: 4px 0;
+    font-size: 13pt;
+    border-bottom: 1px solid #444;
+    padding-bottom: 4px;
+}
+.picker-date {
+    margin-left: 8px;
+    margin-bottom: 10px;
+}
+.picker-date h4 {
+    color: lightblue;
+    margin: 6px 0 4px 0;
+    font-size: 10pt;
+    font-weight: normal;
+}
+.picker-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.picker-thumb {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #000;
+}
+.picker-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.picker-thumb:hover { border-color: #ffd84a; }
+.picker-thumb .label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0,0,0,0.6);
+    color: #ffd84a;
+    font-size: 7pt;
+    text-align: center;
+    padding: 1px 0;
+    pointer-events: none;
+}
+
+#help {
+    position: fixed;
+    bottom: 14px;
+    left: 14px;
+    color: #a0a0a0;
+    background-color: rgba(0,0,0,0.3);
+    font-size: 18pt;
+    padding: 0;
+    border: 2px solid #a0a0a0;
+    border-radius: 5px;
+    display: block;
+    width: 28px;
+    height: 28px;
+    line-height: 24px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 10000;
+    opacity: 0.66;
+}
+#help:hover { opacity: 1; }
+
+#helper {
+    position: fixed;
+    display: none;
+    width: 500px;
+    height: 500px;
+    top: 25px;
+    left: 180px;
+    font-size: 12pt;
+    line-height: 1.6;
+    color: darkblue;
+    background-color: rgba(255,255,255,1);
+    z-index: 10001;
+    padding: 0px 20px 20px 20px;
+    border-color: #000088;
+    border-width: 2px;
+    border-radius: 5px;
+}
+
+.bold { font-weight: bold; }
