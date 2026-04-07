@@ -1,6 +1,14 @@
 <?php
 require __DIR__ . '/config.php';
 
+// Real HTTP cache headers for the HTML page itself. Proxies honour these
+// (the <meta http-equiv> tags in header.php are only hints to the browser,
+// not the proxy). Static assets are versioned in their URL via header.php's
+// asset() helper and cached as immutable by web.config / .htaccess.
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 $idx  = isset($_GET['id'])   ? (string) $_GET['id']   : '0';
 $date = isset($_GET['date']) ? (string) $_GET['date'] : '';
 $q    = isset($_GET['q'])    ? trim((string) $_GET['q']) : '';

@@ -1,0 +1,35 @@
+# Apache configuration for Othello.
+#
+# - Static assets (.css, .js, favicon, fonts) are cached for one year as
+#   immutable. Combined with the ?v=<filemtime> query string emitted by
+#   header.php, this means: a fresh push gives every asset a new URL,
+#   which is a cache miss everywhere (browser, corporate proxy, CDN);
+#   once fetched it never has to be re-validated.
+#
+# - The HTML page itself (index.php) is left to PHP, which sends
+#   Cache-Control: no-cache, no-store, must-revalidate from the top of
+#   index.php. set_viewer.php / export.php each set their own headers.
+#
+# IIS users: this file is ignored. See web.config instead.
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|ico|woff2?|ttf|eot|svg)$">
+    Header set Cache-Control "max-age=31536000, public, immutable"
+  </FilesMatch>
+
+  # Basic security headers — cheap, harmless on a closed network.
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy        "same-origin"
+</IfModule>
+
+# Block direct download of config / docs / dotfiles.
+<FilesMatch "\.(ini|md|log)$">
+  Require all denied
+</FilesMatch>
+
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+# Make sure index.php is the directory index.
+DirectoryIndex index.php
