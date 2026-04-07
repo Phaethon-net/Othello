@@ -151,15 +151,23 @@ function render_thumb_cell($imagePath, $idx, $dataURL, $viewer, $info) {
     $label    = htmlspecialchars($info['modality'] . ' ' . $info['imagingType']);
     $nameAttr = htmlspecialchars($base, ENT_QUOTES);
 
+    // The .thumb-wrap div carries data attrs and click/contextmenu handlers.
+    // The inner <img> has pointer-events: none so Edge's Visual Search hover
+    // icon never triggers — Edge only attaches it to <img> elements that
+    // actually receive pointer events.
     $out  = "<div class='cell'>";
     $out .= "  <div class='viewer'>";
     $out .= "    <div class='typeP'>$label</div>";
     if ($viewer === 'spotlight') {
         $out .= "    <a class='spotlight' href='$dataSrc'>";
-        $out .= "      <img class='exam-thumb' data-full='$dataSrc' data-name='$nameAttr' src='$thumbSrc'>";
+        $out .= "      <div class='thumb-wrap' data-full='$dataSrc' data-name='$nameAttr'>";
+        $out .= "        <img class='exam-thumb' src='$thumbSrc' alt=''>";
+        $out .= "      </div>";
         $out .= "    </a>";
     } else {
-        $out .= "    <img class='exam-thumb' data-full='$dataSrc' data-name='$nameAttr' src='$thumbSrc'>";
+        $out .= "    <div class='thumb-wrap' data-full='$dataSrc' data-name='$nameAttr'>";
+        $out .= "      <img class='exam-thumb' src='$thumbSrc' alt=''>";
+        $out .= "    </div>";
     }
     $out .= "  </div>";
     $out .= "</div>";

@@ -388,15 +388,25 @@ div.div_date {
     font-size: 10pt;
 }
 
-img.exam-thumb {
+/* Thumbnail wrap is the click target. Inner <img> has pointer-events: none
+   so Edge's Visual Search hover icon never triggers (Edge only attaches
+   it to <img> elements that actually receive pointer events). */
+.thumb-wrap {
+    display: inline-block;
+    position: relative;
     cursor: pointer;
     border: 2px solid transparent;
     box-sizing: border-box;
+    line-height: 0;
 }
-img.exam-thumb.selected {
+.thumb-wrap.selected {
     outline: 2px solid #ffd84a;
     outline-offset: -2px;
     box-shadow: 0 0 6px rgba(255, 216, 74, 0.7);
+}
+img.exam-thumb {
+    pointer-events: none;
+    display: block;
 }
 
 /* PView overlay */
@@ -609,6 +619,7 @@ img.exam-thumb.selected {
     height: 100%;
     object-fit: cover;
     display: block;
+    pointer-events: none;   /* defeat Edge Visual Search hover icon */
 }
 .picker-thumb:hover { border-color: #ffd84a; }
 .picker-thumb .label {

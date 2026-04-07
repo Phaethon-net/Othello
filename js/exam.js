@@ -25,8 +25,10 @@
             });
         });
 
-        const thumbs = document.querySelectorAll('img.exam-thumb');
-        if (thumbs.length === 0) return;
+        // Click target is .thumb-wrap (the inner <img> has pointer-events: none
+        // to defeat Edge's Visual Search hover icon).
+        const wraps = document.querySelectorAll('.thumb-wrap');
+        if (wraps.length === 0) return;
 
         const selected = new Set();   // keys are basenames
         const countEl  = document.getElementById('sel-count');
@@ -35,60 +37,51 @@
             if (countEl) countEl.textContent = selected.size + ' selected';
         }
 
-        function toggleSelect(img) {
-            const k = img.dataset.name;
+        function toggleSelect(wrap) {
+            const k = wrap.dataset.name;
             if (!k) return;
             if (selected.has(k)) {
                 selected.delete(k);
-                img.classList.remove('selected');
+                wrap.classList.remove('selected');
             } else {
                 selected.add(k);
-                img.classList.add('selected');
+                wrap.classList.add('selected');
             }
             updateCount();
         }
 
-        thumbs.forEach(function (img) {
-            // Right-click toggles selection. Also stop the wrapping <a>'s
-            // default context menu so spotlight mode works the same.
-            img.addEventListener('contextmenu', function (e) {
+        wraps.forEach(function (wrap) {
+            // Right-click toggles selection. stopPropagation so the wrapping
+            // <a class='spotlight'> in spotlight mode doesn't see it.
+            wrap.addEventListener('contextmenu', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleSelect(img);
+                toggleSelect(wrap);
             });
             // In pview mode, left-click opens our viewer. In spotlight mode,
-            // we let the wrapping <a class="spotlight"> handle it.
+            // we let the click bubble to the wrapping <a class='spotlight'>
+            // which the spotlight library binds to.
             if (viewer === 'pview') {
-                img.addEventListener('click', function (e) {
+                wrap.addEventListener('click', function (e) {
                     if (e.altKey) return;     // reserve for future use
-                    if (window.PView && img.dataset.full) {
-                        window.PView.open(img.dataset.full);
+                    if (window.PView && wrap.dataset.full) {
+                        window.PView.open(wrap.dataset.full);
                     }
                 });
             }
         });
 
-        // Suppress context menu on the spotlight <a> wrappers too, otherwise
-        // Edge can show the menu before our img handler fires.
-        document.querySelectorAll('a.spotlight').forEach(function (a) {
-            a.addEventListener('contextmenu', function (e) {
-                e.preventDefault();
-                const img = a.querySelector('img.exam-thumb');
-                if (img) toggleSelect(img);
-            });
-        });
-
         const btnAll = document.getElementById('btn-select-all');
         if (btnAll) btnAll.addEventListener('click', function () {
-            thumbs.forEach(function (i) {
-                if (!selected.has(i.dataset.name)) toggleSelect(i);
+            wraps.forEach(function (w) {
+                if (!selected.has(w.dataset.name)) toggleSelect(w);
             });
         });
 
         const btnClear = document.getElementById('btn-clear-all');
         if (btnClear) btnClear.addEventListener('click', function () {
-            document.querySelectorAll('img.exam-thumb.selected').forEach(function (i) {
-                toggleSelect(i);
+            document.querySelectorAll('.thumb-wrap.selected').forEach(function (w) {
+                toggleSelect(w);
             });
         });
 
