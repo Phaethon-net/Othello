@@ -34,9 +34,18 @@ function parse_image($basename) {
 // fileFilter() + glob check, but only includes folders that actually have
 // today's images (not just folders touched today).
 function today_patients($path, $today) {
+    // Cache the full folder scan for 2 minutes. The scan touches every patient
+    // folder and every JPG inside it — on a network share with years of data
+    // this dominates page load time. Cache key includes the date so it
+    // auto-expires at midnight without any explicit cleanup.
+    $cacheFile = sys_get_temp_dir() . '/othello_today_' . $today . '_' . md5($path) . '.json';
+    if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < 120) {
+        $cached = json_decode(file_get_contents($cacheFile), true);
+        if (is_array($cached)) return $cached;
+    }
+
     $hits = [];
     foreach (glob($path . '*', GLOB_ONLYDIR) as $f) {
-        // Check for any non-thumbnail JPG with today's date in field [7]
         $jpgs = glob($f . '/*.jpg');
         foreach ($jpgs as $j) {
             $base = basename($j);
@@ -49,7 +58,9 @@ function today_patients($path, $today) {
         }
     }
     natcasesort($hits);
-    return $hits;
+    $result = array_values($hits);
+    @file_put_contents($cacheFile, json_encode($result), LOCK_EX);
+    return $result;
 }
 
 function search_patients($path, $q) {
