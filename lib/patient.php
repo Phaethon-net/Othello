@@ -44,8 +44,13 @@ function today_patients($path, $today) {
         if (is_array($cached)) return $cached;
     }
 
+    // Pre-filter by folder mtime: only folders the OS touched today need an
+    // inner scan. On a large archive this reduces the JPG scan from O(all
+    // patients) to O(today's patients), which is typically single-digits.
+    $todayStart = mktime(0, 0, 0);
     $hits = [];
     foreach (glob($path . '*', GLOB_ONLYDIR) as $f) {
+        if (filemtime($f) < $todayStart) continue;
         $jpgs = glob($f . '/*.jpg');
         foreach ($jpgs as $j) {
             $base = basename($j);
